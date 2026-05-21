@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Evaluación Técnica Integrada | Modo Seguro</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none; /* evita selección de texto global */
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Prevenir pull-to-refresh en móviles */
+        html, body {
+            overscroll-behavior: none;
+            background: linear-gradient(145deg, #eef2f7 0%, #cbdbe2 100%);
+            font-family: 'Inter', 'Segoe UI', system-ui, 'Roboto', sans-serif;
+            min-height: 100vh;
+            width: 100%;
+        }
+
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            margin: 0;
+            min-height: 100vh;
+        }
+
+        /* Contenedor principal expansivo */
+        .app-container {
+            width: 100%;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1rem;
+            transition: all 0.2s;
+        }
+
+        /* Pantalla de bienvenida / quiz */
+        .screen {
+            background: rgba(255, 255, 255, 0.97);
+            border-radius: 2rem;
+            box-shadow: 0 25px 45px -12px rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(2px);
+            padding: 2rem;
+            width: 100%;
+            transition: all 0.2s;
+        }
+
+        .welcome-screen {
+            text-align: center;
+        }
+
+        .welcome-screen h1 {
+            font-size: 2.2rem;
+            background: linear-gradient(135deg, #1f5068, #2c7da0, #e67e22);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            margin-bottom: 1rem;
+        }
+
+        .instructions {
+            font-size: 1.1rem;
+            color: #2c3e66;
+            margin: 1rem 0 2rem;
+            line-height: 1.5;
+            background: #eef2fa;
+            padding: 1.2rem;
+            border-radius: 1.5rem;
+        }
+
+        .btn-start {
+            background: #2c7da0;
+            color: white;
+            font-size: 1.3rem;
+            font-weight: bold;
+            padding: 0.8rem 2rem;
+            border: none;
+            border-radius: 3rem;
+            cursor: pointer;
+            transition: 0.2s;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        .btn-start:hover {
+            background: #1f5e7a;
+            transform: scale(1.02);
+        }
+
+        /* panel del quiz */
+        .quiz-header {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            background: #e6e0f0;
+            padding: 0.7rem 1.2rem;
+            border-radius: 3rem;
+            margin-bottom: 1.5rem;
+            font-weight: 700;
+        }
+
+        .badge {
+            background: white;
+            padding: 0.3rem 1rem;
+            border-radius: 3rem;
+            color: #1f5068;
+        }
+
+        .question-card {
+            background: white;
+            border-radius: 1.8rem;
+            padding: 1.6rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.08);
+            border: 1px solid #dee9ef;
+        }
+
+        .question-text {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #0b3b4f;
+            margin-bottom: 1.5rem;
+            line-height: 1.4;
+        }
+
+        .options-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.9rem;
+        }
+
+        .option-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            background: #fbfeff;
+            border: 2px solid #cbdde6;
+            border-radius: 1.2rem;
+            padding: 0.9rem 1rem;
+            cursor: pointer;
+            transition: all 0.1s ease;
+        }
+
+        /* Alta visibilidad para la opción seleccionada */
+        .option-item.selected-opt {
+            background: #1e6f9f !important;
+            border-color: #0a4b6e !important;
+            box-shadow: 0 0 0 3px rgba(30,111,159,0.3);
+        }
+
+        .option-item.selected-opt .option-text,
+        .option-item.selected-opt .option-marker {
+            color: white !important;
+            background: #0f4b6e;
+        }
+
+        .option-marker {
+            font-weight: 800;
+            background: #d9e2e8;
+            width: 32px;
+            height: 32px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 40px;
+            color: #1f5068;
+            flex-shrink: 0;
+            font-size: 0.9rem;
+        }
+
+        .option-text {
+            font-size: 1rem;
+            line-height: 1.4;
+            color: #1e2f3a;
+            font-weight: 500;
+        }
+
+        .nav-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            gap: 0.8rem;
+            margin: 1rem 0;
+        }
+
+        button {
+            border: none;
+            background: #e0e7ec;
+            font-weight: 700;
+            padding: 0.6rem 1.2rem;
+            border-radius: 3rem;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: 0.15s;
+        }
+
+        .btn-primary {
+            background: #2c7da0;
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #5f9db2;
+            color: white;
+        }
+
+        .btn-warning {
+            background: #e9b35f;
+            color: #2d2b1f;
+        }
+
+        .btn-danger {
+            background: #bc6c25;
+            color: white;
+        }
+
+        .results-panel {
+            margin-top: 1.5rem;
+            background: #fff9ef;
+            border-radius: 1.5rem;
+            padding: 1rem;
+            border-left: 6px solid #e9b35f;
+        }
+
+        .result-list {
+            max-height: 350px;
+            overflow-y: auto;
+            font-size: 0.85rem;
+        }
+
+        .result-item {
+            padding: 0.5rem;
+            border-bottom: 1px solid #ffe0b5;
+        }
+
+        footer {
+            text-align: center;
+            font-size: 0.7rem;
+            color: #6f8f9c;
+            margin-top: 1.2rem;
+        }
+
+        @media (max-width: 680px) {
+            .screen { padding: 1.2rem; }
+            .question-text { font-size: 1rem; }
+            .option-text { font-size: 0.85rem; }
+            .option-marker { width: 28px; height: 28px; font-size: 0.8rem; }
+            .btn { padding: 0.4rem 0.8rem; font-size: 0.75rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="app-container" id="appContainer">
+    <!-- Pantalla de bienvenida -->
+    <div id="welcomeScreen" class="screen welcome-screen">
+        <h1>🔐 Evaluación Técnica Integral</h1>
+        <div class="instructions">
+            📘 Banco profesional: Firmware, drivers, arquitectura, propiedad intelectual, diagnóstico.<br>
+            🎲 <strong>10 preguntas aleatorias</strong> (cada prueba mezcla opciones).<br>
+            ✅ No hay feedback durante el examen.<br>
+            🔍 Al finalizar, usa <strong>"Corrección final"</strong> con contraseña (Tecno2026) para ver resultados.
+        </div>
+        <button id="startExamBtn" class="btn-start">🚀 Comenzar Evaluación (Pantalla completa)</button>
+    </div>
+
+    <!-- Pantalla del cuestionario (oculta al inicio) -->
+    <div id="quizScreen" class="screen" style="display: none;">
+        <div class="quiz-header">
+            <span class="badge" id="qCounter">Pregunta 1 / 10</span>
+            <span class="badge" id="answeredBadge">📌 Respondidas: 0 / 10</span>
+        </div>
+        <div id="questionArea"></div>
+        <div class="nav-buttons">
+            <button id="prevBtn" class="btn-secondary">◀ Anterior</button>
+            <button id="nextBtn" class="btn-primary">Siguiente ▶</button>
+            <button id="correctionFinalBtn" class="btn-danger">🔒 Corrección final</button>
+        </div>
+        <div id="resultsContainer" style="display: none;"></div>
+        <footer>⚡ Modo evaluación seguro · Pantalla completa activa</footer>
+    </div>
+</div>
+
+<script>
+    // --------------------------------------------------------------
+    // 1. BANCO DE PREGUNTAS MAESTRO (combinado de todos los materiales)
+    // --------------------------------------------------------------
+    const MASTER_BANK = [];
+
+    // ---- BLOQUE: Arquitectura de Firmware y Arranque (20 preguntas) ----
+    const firmwareBank = [
+        { text: "Un sistema completa la Fase 0 (encendido físico), pero el monitor permanece en negro y no se emiten códigos sonoros (beeps). ¿Qué componente de la jerarquía de capas es el responsable más probable de este bloqueo absoluto?", options: ["Capa 4: El kernel del SO no encuentra sector de arranque.", "Capa 3: Controlador de interrupciones detectó periférico incompatible.", "Capa 2: El chip EEPROM no logra liberar el código base para iniciar el POST.", "Capa 1: El bus de datos de la CPU tiene overclocking inestable.", "El Bootloader: no ha sido cargado en RAM."], correct: "c" },
+        { text: "Al comparar SPI Flash vs NOR Flash para almacenar BIOS, ¿razón técnica principal por la que NOR Flash se prefiere en sistemas críticos pese a mayor costo?", options: ["Capacidad masiva Zettabytes.", "Acceso aleatorio que garantiza alta integridad y fiabilidad en lectura.", "Comunicación SPI más rápida.", "Implementa nativamente CSM.", "Inmune a ciclos de escritura."], correct: "b" },
+        { text: "Durante actualización de firmware (flashing) ocurre fluctuación de voltaje al 60% y el sistema se vuelve 'ladrillo'. ¿Por qué?", options: ["SO bloquea acceso por seguridad.", "Código en EEPROM queda a medias, eliminando rutinas de inicialización.", "Secure Boot detecta firma incompleta.", "EEPROM requiere energía constante.", "Parámetros de overclocking se borran."], correct: "b" },
+        { text: "Técnico intenta instalar disco de 4TB en sistema con BIOS tradicional, solo reconoce 2TB. ¿Límite técnico?", options: ["BIOS no admite rutinas E/S modernas.", "Límite máximo de 2TB por diseño del BIOS tradicional.", "POST se detiene al detectar alta densidad.", "EEPROM no tiene suficientes ciclos de vida.", "CSM desactivado."], correct: "b" },
+        { text: "En POST, tras verificar CPU pero antes de detectar almacenamiento, emite pitidos. ¿Sub-paso fallido?", options: ["Inicialización periféricos esenciales.", "Traspaso al Kernel.", "Test de memoria (RAM).", "Búsqueda sector arranque.", "Configuración frecuencias bus."], correct: "c" },
+        { text: "Función del BIOS que actúa como intermediario entre software y componentes físicos:", options: ["Inventario de hardware.", "Rutinas de E/S y controlador de interrupciones.", "Secure Boot.", "Wear-leveling.", "Pulso eléctrico."], correct: "b" },
+        { text: "Servidor reporta errores checksum en firmware, chip EEPROM superó 100k ciclos. ¿Medida de mitigación?", options: ["Reducir temperatura ambiente.", "Usar GUI para reducir carga.", "Implementar wear-leveling y gestión avanzada de errores.", "Sustituir por memoria volátil.", "Desactivar Secure Boot."], correct: "c" },
+        { text: "Diferencia crítica en 'Paso 3: Relevo al SO' entre BIOS tradicional y UEFI:", options: ["BIOS entrega control directo al Kernel, UEFI usa bootloader.", "UEFI localiza sector arranque en EEPROM.", "UEFI permite arranque rápido y Secure Boot antes de ceder control.", "BIOS realiza inventario en capa 4.", "No hay diferencia."], correct: "c" },
+        { text: "Modificación de frecuencias de bus (overclocking) en fase de configuración. ¿Dónde se almacenan permanentemente?", options: ["RAM principal.", "Kernel del SO.", "Chip EEPROM junto con BIOS.", "Sector de arranque.", "Controlador de interrupciones."], correct: "c" },
+        { text: "Sistema moderno necesita ejecutar SO antiguo que no soporta UEFI. ¿Tecnología necesaria?", options: ["Secure Boot.", "Módulos CSM (Compatibility Support Module).", "NOR Flash.", "Ciclos EEPROM >100k.", "Interfaz gráfica con mouse."], correct: "b" },
+        { text: "Factores que aceleran deterioro físico de EEPROM:", options: ["Uso excesivo del mouse.", "Temperaturas elevadas y fluctuaciones de voltaje.", "Actualizaciones frecuentes del SO.", "Incompatibilidad Secure Boot.", "Ejecución prolongada del POST."], correct: "b" },
+        { text: "¿Por qué flashear BIOS desde herramienta integrada UEFI (EZ Flash) es más seguro que desde SO?", options: ["Interfaz gráfica más intuitiva.", "Evita interferencia de procesos del SO que podrían interrumpir escritura en EEPROM.", "UEFI aumenta voltaje automáticamente.", "EEPROM solo es reprogramable desde capa 3.", "Secure Boot bloquea escritura desde capa 4."], correct: "b" }
+    ];
+    firmwareBank.forEach(q => MASTER_BANK.push(q));
+
+    // ---- BLOQUE: Diagnóstico y Razonamiento Técnico (drivers/controladores) ----
+    const diagBank = [
+        { text: "Un servidor con volumen de 8 TB no arranca tras migración, tabla MBR. ¿Diagnóstico?", options: ["Firmware en modo UEFI nativo requiere GPT para volúmenes >2.2TB.", "BIOS legacy no reconoce NTFS.", "Secure Boot bloquea MBR.", "Hardware inerte."], correct: "a" },
+        { text: "Durante arranque, sistema emite beeps y pantalla negra. ¿Fase del fallo?", options: ["Inicialización UEFI (Secure Boot).", "Boot Manager (no encuentra dispositivo).", "Encendido & POST (fallo hardware básico).", "Capa SO."], correct: "c" },
+        { text: "Técnico instala Linux personalizado pero sistema rechaza bootloader. ¿Ajuste UEFI responsable?", options: ["Perfil XMP.", "Secure Boot activo sin firma digital.", "Orden de arranque prioriza NVMe.", "Inicialización paralela."], correct: "b" },
+        { text: "Administrador de Dispositivos muestra icono flecha hacia abajo. ¿Qué significa?", options: ["Conflicto de IRQ.", "Controlador corrupto.", "Dispositivo deshabilitado manualmente (no consume recursos).", "Hardware no detectado por UEFI."], correct: "c" },
+        { text: "Inestabilidad en GPU nueva, técnico ya instaló drivers del fabricante. ¿Paso omitido según reglas de oro?", options: ["Activar overclocking.", "Instalar controladores del Chipset antes que los de GPU.", "Usar Windows Update primero.", "Formatear USB en FAT32."], correct: "b" },
+        { text: "Sistema detecta 'Dispositivo Desconocido' en SO, pero hardware aparece en UEFI. ¿Problema?", options: ["Daño físico.", "Firmware corrupto.", "SO carece del driver necesario.", "Tabla GPT impide ID."], correct: "c" },
+        { text: "Tecnología UEFI que ajusta automáticamente velocidad, latencia y voltaje de memorias RAM:", options: ["VCore Adjustment.", "Secure Boot.", "XMP / DOCP.", "Flashing Q-Flash."], correct: "c" },
+        { text: "¿Por qué crítico no interrumpir Flashing de firmware?", options: ["SO perdería firma Secure Boot.", "Hardware queda inerte al corromper instrucciones básicas en EEPROM.", "Administrador de Dispositivos muestra código 43.", "Boot order se resetea a USB."], correct: "b" },
+        { text: "Triángulo Amarillo con Código 10 en Administrador de Dispositivos:", options: ["Funciona correctamente.", "Error de instalación o conflicto.", "Dispositivo deshabilitado ahorro energía.", "ID no existe en Windows Update."], correct: "b" },
+        { text: "En Pirámide de Abstracción, función de los Drivers:", options: ["Inicializar hardware y POST.", "Traducir llamadas del SO hacia hardware.", "Gestionar almacenamiento EEPROM.", "Verificar firmas rootkits."], correct: "b" }
+    ];
+    diagBank.forEach(q => MASTER_BANK.push(q));
+
+    // ---- BLOQUE: Arquitectura de Ecosistemas de Software (Software base, utilitarios, etc) ----
+    const ecoBank = [
+        { text: "Proceso que organiza los hilos de ejecución directamente en la CPU. ¿Capa?", options: ["Capa de Aplicaciones.", "Capa de Utilitarios.", "Capa de Software de Base.", "Capa de Hardware."], correct: "c" },
+        { text: "Sistema arranca pero no puede hacer backups ni detectar malware. ¿Capa fallando?", options: ["Software de Base.", "Utilitarios.", "Aplicaciones.", "Hardware."], correct: "b" },
+        { text: "En 'Anatomía de un Clic', algoritmo comprime archivo pero falla, SO asigna CPU normalmente. Diagnóstico:", options: ["Colapso de base.", "Falla aplicación.", "Interrupción en utilitarios (compresión).", "Error driver."], correct: "c" },
+        { text: "¿Por qué cierre forzado de explorer.exe colapsa interfaz pero no el equipo?", options: ["Proceso aplicación.", "Proceso de Software de Base del cual depende la interfaz.", "Utilitario de disco.", "Kernel detecta error hardware."], correct: "b" },
+        { text: "CPU al 100% durante desfragmentación, comportamiento esperado de:", options: ["Kernel.", "Aplicación.", "Utilitario.", "Chip seguridad."], correct: "c" },
+        { text: "Eliminar systemd en Linux (Test del Fallo):", options: ["Funciona lento.", "Equipo no arranca (fallo crítico).", "Usuario no puede navegar.", "Pierde compresión."], correct: "b" }
+    ];
+    ecoBank.forEach(q => MASTER_BANK.push(q));
+
+    // ---- BLOQUE: Gestión Táctica de Software Educativo ----
+    const gestionBank = [
+        { text: "Instalador educativo pesa 5 GB. Espacio libre recomendado:", options: ["5 GB.", "10 GB.", "15 GB.", "64 GB."], correct: "c" },
+        { text: "Software requiere versión específica de Java y entorno aislado rápido, sin SO completo. Estrategia:", options: ["Máquina Virtual.", "Contenedores (Docker).", "Versión portable USB.", "Instalación nativa."], correct: "b" },
+        { text: "Alta tasa de ataques internos. Configuración que reduce recursos y cierra vectores:", options: ["Actualizaciones automáticas.", "Deshabilitar servicios (Bluetooth, Print Spooler).", "Firewall solo tráfico entrante.", "Bloquear lectura docentes."], correct: "b" },
+        { text: "Actualización masiva: procedimiento seguro según protocolo:", options: ["Instalar todos fin de semana.", "Actualizar 10% y monitorear 48h.", "Desplegar en docentes primero.", "Solo Windows 11."], correct: "b" },
+        { text: "¿Por qué recomendar CSV/UTF-8 sobre XLSX?", options: ["Compatibilidad software libre.", "XLSX no valida reglas.", "CSV se convierte a PDF/A.", "Evitar edición manual."], correct: "a" }
+    ];
+    gestionBank.forEach(q => MASTER_BANK.push(q));
+
+    // ---- BLOQUE: Propiedad, Ética y Seguridad (selección representativa) ----
+    const ethicsBank = [
+        { text: "Cliente solicita instalar software con crack. Riesgo primario inmediato:", options: ["Pérdida soporte técnico.", "Violación derechos morales.", "Apertura puerta trasera (malware).", "Incompatibilidad futura.", "Nulidad EULA."], correct: "c" },
+        { text: "Empresa Argentina desarrolla algoritmos. ¿Protección legal automática?", options: ["Patente.", "Derecho de Autor (Copyright) automático.", "Registro marca.", "Secreto industrial.", "Propiedad integrada a hardware."], correct: "b" },
+        { text: "Estrategia 3-2-1: disco interno + NAS misma red local, ¿qué incumple?", options: ["Cantidad copias.", "Tecnologías distintas.", "Copia externa (Offsite).", "Integridad código fuente.", "Tres soportes físicos."], correct: "c" },
+        { text: "¿Qué componente del Escudo Digital bloquea ingeniería inversa mediante ofuscación?", options: ["Claves producto.", "Activación en línea.", "Cifrado y Anti-Tamper.", "Dongles USB.", "Símbolos Copyright."], correct: "c" }
+    ];
+    ethicsBank.forEach(q => MASTER_BANK.push(q));
+
+    // ---- adicional: algunas preguntas de rutas y configuración extra ----
+    MASTER_BANK.push({ text: "Un software portátil funciona en estación técnica pero falla desde directorio compartido en red. Causa probable:", options: ["Permisos administrador.", "Rutas absolutas en lugar de relativas.", "Sistema archivos no NTFS.", "Latencia red.", "JSON incompatible."], correct: "b" });
+    MASTER_BANK.push({ text: "Al optimizar Photoshop con colapsos frecuentes, prioridad:", options: ["Crear plantilla.", "Mapear atajos.", "Ajustar asignación de RAM en preferencias.", "Reinstalar Visual C++", "Cambiar .ini a .json"], correct: "c" });
+    MASTER_BANK.push({ text: "Migración datos misma partición es casi instantánea. ¿Motivo?", options: ["Portapapeles RAM.", "Duplicación bloques.", "Los datos físicos no se mueven, solo referencia lógica en índice.", "Compresión lossless.", "Creación SFX."], correct: "c" });
+    MASTER_BANK.push({ text: "Aplicación corporativa no arranca: 'Interfaz corrupta'. Procedimiento correcto:", options: ["Reinstalar típica.", "Borrar .tmp/.log.", "Editar archivo configuración (.xml/.json) con editor texto plano.", "Usar Word.", "regsvr32."], correct: "c" });
+
+    // --------------------------------------------------------------
+    // CONSTANTES Y ESTADO GLOBAL
+    // --------------------------------------------------------------
+    const TEST_SIZE = 10;          // N preguntas por prueba
+    let currentTestQuestions = []; // { text, shuffledOptions, correctIndex }
+    let userSelections = [];       // índice elegido (null si no responde)
+    let currentQuestionIdx = 0;
+    let isFullscreenActive = false;
+    let examCompleted = false;      // para control de nueva prueba
+
+    // Elementos DOM
+    const welcomeDiv = document.getElementById('welcomeScreen');
+    const quizDiv = document.getElementById('quizScreen');
+    const startBtn = document.getElementById('startExamBtn');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const correctionBtn = document.getElementById('correctionFinalBtn');
+    const questionArea = document.getElementById('questionArea');
+    const qCounterSpan = document.getElementById('qCounter');
+    const answeredBadge = document.getElementById('answeredBadge');
+    const resultsContainer = document.getElementById('resultsContainer');
+
+    // Funciones auxiliares
+    function shuffleArray(arr) {
+        for (let i = arr.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+    }
+
+    // Generar nueva prueba (preguntas aleatorias, opciones mezcladas)
+    function generateRandomTest() {
+        // Seleccionar TEST_SIZE índices únicos del banco maestro
+        const shuffledIndices = shuffleArray([...Array(MASTER_BANK.length).keys()]);
+        const selectedIndices = shuffledIndices.slice(0, TEST_SIZE);
+        const newTest = [];
+        for (let idx of selectedIndices) {
+            const original = MASTER_BANK[idx];
+            const opts = [...original.options];
+            const correctLetter = original.correct;
+            const letterMap = { 'a':0, 'b':1, 'c':2, 'd':3, 'e':4 };
+            const originalCorrectIdx = letterMap[correctLetter];
+            const correctAnswerText = opts[originalCorrectIdx];
+            // Mezclar opciones
+            let shuffledOpts = shuffleArray([...opts]);
+            const newCorrectIdx = shuffledOpts.findIndex(opt => opt === correctAnswerText);
+            newTest.push({
+                text: original.text,
+                shuffledOptions: shuffledOpts,
+                correctIndex: newCorrectIdx,
+                correctAnswerText: correctAnswerText
+            });
+        }
+        return newTest;
+    }
+
+    function updateProgressCounters() {
+        const answered = userSelections.filter(s => s !== null).length;
+        answeredBadge.innerText = `📌 Respondidas: ${answered} / ${TEST_SIZE}`;
+        qCounterSpan.innerText = `Pregunta ${currentQuestionIdx+1} / ${TEST_SIZE}`;
+    }
+
+    function renderCurrentQuestion() {
+        if (!currentTestQuestions.length) return;
+        const q = currentTestQuestions[currentQuestionIdx];
+        const selectedIdx = userSelections[currentQuestionIdx];
+        let optionsHtml = '';
+        const letters = ['A', 'B', 'C', 'D', 'E'];
+        q.shuffledOptions.forEach((opt, idx) => {
+            const isSelected = (selectedIdx === idx);
+            const selectedClass = isSelected ? 'selected-opt' : '';
+            optionsHtml += `
+                <div class="option-item ${selectedClass}" data-opt-index="${idx}">
+                    <span class="option-marker">${letters[idx]}</span>
+                    <span class="option-text">${escapeHtml(opt)}</span>
+                </div>
+            `;
+        });
+        const html = `
+            <div class="question-card">
+                <div class="question-text">${escapeHtml(q.text)}</div>
+                <div class="options-list" id="optionsList">
+                    ${optionsHtml}
+                </div>
+            </div>
+        `;
+        questionArea.innerHTML = html;
+        // Eventos click en opciones
+        document.querySelectorAll('.option-item').forEach(div => {
+            div.addEventListener('click', () => {
+                const optIndex = parseInt(div.getAttribute('data-opt-index'));
+                if (!isNaN(optIndex)) {
+                    userSelections[currentQuestionIdx] = optIndex;
+                    renderCurrentQuestion();  // refresca resaltado
+                    updateProgressCounters();
+                }
+            });
+        });
+        updateProgressCounters();
+    }
+
+    function escapeHtml(str) {
+        return String(str).replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+
+    function nextQuestion() {
+        if (currentQuestionIdx < TEST_SIZE - 1) {
+            currentQuestionIdx++;
+            renderCurrentQuestion();
+        } else {
+            if (userSelections.filter(s => s !== null).length === TEST_SIZE) {
+                alert("📌 Has respondido todas. Usa 'Corrección final' para obtener resultados.");
+            } else {
+                alert(`⚠️ Aún tienes ${TEST_SIZE - userSelections.filter(s => s !== null).length} pregunta(s) sin responder. Completa antes de corregir.`);
+            }
+        }
+    }
+
+    function prevQuestion() {
+        if (currentQuestionIdx > 0) {
+            currentQuestionIdx--;
+            renderCurrentQuestion();
+        } else {
+            alert("Primera pregunta.");
+        }
+    }
+
+    async function startFullscreenAndExam() {
+        try {
+            await document.documentElement.requestFullscreen();
+            isFullscreenActive = true;
+        } catch(e) { console.warn("Fullscreen no permitido"); }
+        // generar nueva prueba
+        currentTestQuestions = generateRandomTest();
+        userSelections = new Array(TEST_SIZE).fill(null);
+        currentQuestionIdx = 0;
+        examCompleted = false;
+        resultsContainer.style.display = 'none';
+        resultsContainer.innerHTML = '';
+        // ocultar welcome, mostrar quiz
+        welcomeDiv.style.display = 'none';
+        quizDiv.style.display = 'block';
+        renderCurrentQuestion();
+        updateProgressCounters();
+    }
+
+    function exitFullscreenAndShowResults() {
+        if (document.fullscreenElement) {
+            document.exitFullscreen().catch(e=>{});
+        }
+        isFullscreenActive = false;
+        // calcular resultados
+        let correctCount = 0;
+        let detailsHtml = '';
+        for (let i=0; i<currentTestQuestions.length; i++) {
+            const q = currentTestQuestions[i];
+            const userIdx = userSelections[i];
+            const isCorrect = (userIdx !== null && userIdx === q.correctIndex);
+            if (isCorrect) correctCount++;
+            const userText = (userIdx !== null) ? q.shuffledOptions[userIdx] : "【Sin responder】";
+            const correctText = q.correctAnswerText;
+            const statusIcon = isCorrect ? '✅' : '❌';
+            detailsHtml += `<div class="result-item"><strong>${statusIcon} Pregunta ${i+1}:</strong><br> Tu respuesta: ${escapeHtml(userText)}<br> Correcta: ${escapeHtml(correctText)}</div>`;
+        }
+        const percent = Math.round((correctCount/TEST_SIZE)*100);
+        resultsContainer.innerHTML = `
+            <div class="results-panel">
+                <h3>📋 Resultado Oficial</h3>
+                <div style="font-size:1.2rem; font-weight:bold;">🎯 Aciertos: ${correctCount} / ${TEST_SIZE} (${percent}%)</div>
+                <div class="result-list">${detailsHtml}</div>
+                <button id="newTestFromResultsBtn" class="btn-warning" style="margin-top:1rem;">🔄 Nueva prueba</button>
+                <button id="closeResultsBtn" class="btn-secondary" style="margin-left:0.5rem;">✖ Cerrar</button>
+            </div>
+        `;
+        resultsContainer.style.display = 'block';
+        document.getElementById('newTestFromResultsBtn')?.addEventListener('click', () => {
+            resetToWelcome();
+        });
+        document.getElementById('closeResultsBtn')?.addEventListener('click', () => {
+            resultsContainer.style.display = 'none';
+        });
+    }
+
+    function resetToWelcome() {
+        if (document.fullscreenElement) document.exitFullscreen();
+        welcomeDiv.style.display = 'block';
+        quizDiv.style.display = 'none';
+        resultsContainer.style.display = 'none';
+        currentTestQuestions = [];
+        userSelections = [];
+        examCompleted = false;
+    }
+
+    // Corrección con contraseña
+    function handleCorrection() {
+        const password = prompt("🔐 Ingrese la contraseña de corrección:");
+        if (password === "Tecno2026") {
+            // salir de pantalla completa y mostrar resultados detallados
+            exitFullscreenAndShowResults();
+        } else {
+            alert("❌ Contraseña incorrecta. Solicita la corrección a tu profesor.");
+        }
+    }
+
+    // Eventos
+    startBtn.addEventListener('click', startFullscreenAndExam);
+    prevBtn.addEventListener('click', prevQuestion);
+    nextBtn.addEventListener('click', nextQuestion);
+    correctionBtn.addEventListener('click', handleCorrection);
+
+    // Seguridad: bloqueo de teclas, menú contextual, copiar, etc.
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C')) ||
+            (e.ctrlKey && e.key === 'u') || (e.ctrlKey && e.key === 's')) {
+            e.preventDefault();
+            return false;
+        }
+        if ((e.ctrlKey && e.key === 'r') || e.key === 'F5') {
+            e.preventDefault();
+            alert("Recarga deshabilitada en modo evaluación.");
+            return false;
+        }
+    });
+    document.addEventListener('contextmenu', e => e.preventDefault());
+    document.addEventListener('copy', e => e.preventDefault());
+    document.addEventListener('cut', e => e.preventDefault());
+    document.addEventListener('paste', e => e.preventDefault());
+    document.addEventListener('dragstart', e => e.preventDefault());
+    // Prevenir back button
+    history.pushState(null, null, location.href);
+    window.addEventListener('popstate', () => {
+        alert("⛔ Navegación hacia atrás deshabilitada durante la evaluación.");
+        history.pushState(null, null, location.href);
+    });
+    window.addEventListener('beforeunload', (e) => {
+        e.preventDefault();
+        e.returnValue = "⚠️ Si recargas o cierras perderás el progreso del examen.";
+        return "⚠️ Si recargas o cierras perderás el progreso del examen.";
+    });
+    // CSS adicional pull-to-refresh prevention
+    document.body.style.overscrollBehavior = 'none';
+</script>
+</body>
+</html>
